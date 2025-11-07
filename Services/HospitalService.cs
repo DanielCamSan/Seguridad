@@ -33,10 +33,12 @@ namespace Security.Services
         {
             return await _repo.GetOne(id);
         }
-        public async Task<Hospital> UpdateHospital(UpdateHospitalDto dto, Guid id)
+        public async Task<Hospital> UpdateHospital(UpdateHospitalDto dto, Guid id, Guid userId)
         {
             Hospital? hospital = await GetOne(id);
             if (hospital == null) throw new Exception("Hospital doesnt exist.");
+
+            if (hospital.AdminId != userId) throw new UnauthorizedAccessException("You are not authorized to update this hospital.");
 
             hospital.Name = dto.Name;
             hospital.Address = dto.Address;
@@ -45,10 +47,13 @@ namespace Security.Services
             await _repo.Update(hospital);
             return hospital;
         }
-        public async Task DeleteHospital(Guid id)
+        public async Task DeleteHospital(Guid id, Guid userId)
         {
-            Hospital? hospital = (await GetAll()).FirstOrDefault(h => h.Id == id);
+            Hospital? hospital = await GetOne(id);
             if (hospital == null) return;
+
+            if (hospital.AdminId != userId) throw new UnauthorizedAccessException("You are not authorized to delete this hospital.");
+
             await _repo.Delete(hospital);
         }
     }

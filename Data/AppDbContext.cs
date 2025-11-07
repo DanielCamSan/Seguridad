@@ -17,9 +17,19 @@ namespace Security.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<User>();
-            modelBuilder.Entity<Hospital>();
-            modelBuilder.Entity<Doctor>();     
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Hospital)
+                .WithMany()
+                .HasForeignKey(u => u.hospitalId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Hospital>()
+                .HasOne(h => h.Admin)
+                .WithMany()
+                .HasForeignKey(h => h.AdminId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Doctor>();
         }
     }
 }
