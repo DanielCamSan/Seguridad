@@ -17,13 +17,14 @@ namespace Security.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> GetAllHospitals()
         {
             IEnumerable<Hospital> items = await _service.GetAll();
             return Ok(items);
         }
         [HttpGet("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> GetOne(Guid id)
         {
             var hospital = await _service.GetOne(id);
