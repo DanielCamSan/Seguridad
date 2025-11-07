@@ -9,5 +9,6 @@ namespace Security.Repositories
         Task Add(Hospital hospital);
         Task Update(Hospital hospital);
         Task Delete(Hospital hospital);
+        Task Add(Doctor doctor);
     }
 }
