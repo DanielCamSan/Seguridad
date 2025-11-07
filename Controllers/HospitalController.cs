@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
 using Security.Services;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+
 
 namespace Security.Controllers
 {
@@ -41,16 +44,36 @@ namespace Security.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
-            if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.UpdateHospital(dto, id);
-            return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
+            var hospital = await _service.GetOne(id);
+            if (hospital == null) return NotFound();
+
+            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                      ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (string.IsNullOrWhiteSpace(sub)) return Forbid();
+            if (!Guid.TryParse(sub, out var userId)) return Forbid();
+
+            if (!(User.IsInRole("Admin") || hospital.AdminId == userId))
+                return Forbid();
+
+            var updated = await _service.UpdateHospital(dto, id);
+            return CreatedAtAction(nameof(GetOne), new { id = updated.Id }, updated);
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize]
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
-            if (!ModelState.IsValid) return ValidationProblem(ModelState);
+            var hospital = await _service.GetOne(id);
+            if (hospital == null) return NotFound();
+
+            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                      ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (string.IsNullOrWhiteSpace(sub)) return Forbid();
+            if (!Guid.TryParse(sub, out var userId)) return Forbid();
+
+            if (!(User.IsInRole("Admin") || hospital.AdminId == userId))
+                return Forbid();
+
             await _service.DeleteHospital(id);
             return NoContent();
         }
