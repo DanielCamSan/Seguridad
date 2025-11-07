@@ -8,5 +8,6 @@ namespace Security.Services
         Task<(bool ok, LoginResponseDto? response)> LoginAsync(LoginDto dto);
         Task<string> RegisterAsync(RegisterDto dto);
         Task<(bool ok, LoginResponseDto? response)> RefreshAsync(RefreshRequestDto dto);
+        Task<(bool ok, string message)> LogoutAsync(Guid userId);
     }
 }

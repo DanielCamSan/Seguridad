@@ -105,6 +105,22 @@ namespace Security.Services
             return (true, resp);
         }
 
+        public async Task<(bool ok, string message)> LogoutAsync(Guid userId)
+        {
+            var user = await _users.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return (false, "User not found.");
+            }
+
+            user.RefreshToken = null;
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            user.RefreshTokenExpiresAt = null;
+
+            await _users.UpdateAsync(user);
+            return (true, "Logged out successfully.");
+        }
+
         private (string token, int expiresInSeconds, string jti) GenerateJwtToken(User user)
         {
             var jwtSection = _configuration.GetSection("Jwt");
