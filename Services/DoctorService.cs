@@ -39,7 +39,7 @@ namespace Security.Services
 
         public async Task<Doctor> GetOne(Guid id)
         {
-            return await _repo.GetOne();
+            return await _repo.GetOne(id);
         }
 
         public async Task<Doctor> UpdateDoctor(UpdateDoctorDto dto, Guid id)

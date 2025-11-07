@@ -8,7 +8,7 @@ namespace Security.Controllers
 {
     [ApiController]
     [Route("/api/[controller]")]
-    public class DoctorController
+    public class DoctorController:ControllerBase
     {
         private readonly IDoctorService _service;
         public DoctorController(IDoctorService service)
@@ -17,20 +17,21 @@ namespace Security.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetAllDoctors()
         {
             IEnumerable<Doctor> items = await _service.GetAll();
             return Ok(items);
         }
         [HttpGet("{id:guid}")]
-        [Authorize]
+        [Authorize (Roles ="User,Admin")]
         public async Task<IActionResult> GetOne(Guid id)
         {
             var doctor = await _service.GetOne(id);
             return Ok(doctor);
         }
         [HttpPost]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateDoctor([FromBody] CreateDoctorDto dto)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -38,8 +39,8 @@ namespace Security.Controllers
             return CreatedAtAction(nameof(GetOne), new { id = doctor.Id }, doctor);
         }
         [HttpPut("{id:guid}")]
-        [Authorize]
-        public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateDoctor([FromBody] UpdateDoctorDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
             var doctor = await _service.UpdateDoctor(dto, id);
@@ -47,7 +48,7 @@ namespace Security.Controllers
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteDoctor(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
