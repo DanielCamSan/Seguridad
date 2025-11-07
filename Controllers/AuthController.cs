@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Security.Models.DTOS;
 using Security.Models.DTOS.Security.Models.DTOS;
 using Security.Services;
+using System.Security.Claims;
 
 namespace Security.Controllers
 {
@@ -35,6 +37,18 @@ namespace Security.Controllers
             var (ok, response) = await _service.RefreshAsync(dto);
             if (!ok || response is null) return Unauthorized();
             return Ok(response);
+        }
+
+
+        [HttpPost("logout")]
+        [Authorize] 
+        public async Task<IActionResult> Logout()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
+            await _service.LogoutAsync(userId);
+            return NoContent();
         }
     }
 }
