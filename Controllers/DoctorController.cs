@@ -48,8 +48,9 @@ namespace Security.Controllers
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
             var doctor = await _service.UpdateDoctor(dto, id);
-            if (doctor == null) return NotFound();
+            if(doctor == null) return NotFound();
             return Ok(doctor);
+ 
         }
 
         [HttpDelete("{id:guid}")]

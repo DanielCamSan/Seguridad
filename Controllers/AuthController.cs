@@ -2,6 +2,9 @@
 using Security.Models.DTOS;
 using Security.Models.DTOS.Security.Models.DTOS;
 using Security.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Security.Controllers
 {
@@ -35,6 +38,27 @@ namespace Security.Controllers
             var (ok, response) = await _service.RefreshAsync(dto);
             if (!ok || response is null) return Unauthorized();
             return Ok(response);
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var userIdString = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var (ok, message) = await _service.LogoutAsync(userId);
+
+            if (!ok)
+            {
+                return BadRequest(new { message });
+            }
+
+            return Ok(new { message });
         }
     }
 }
