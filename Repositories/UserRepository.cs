@@ -16,6 +16,9 @@ namespace Security.Repositories
         public Task<User?> GetByRefreshToken(string refreshToken) =>
             _ctx.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 
+        public Task<User?> GetByIdAsync(Guid id) =>
+            _ctx.Users.FirstOrDefaultAsync(u => u.Id == id);
+
         public async Task AddAsync(User user)
         {
             _ctx.Users.Add(user);
