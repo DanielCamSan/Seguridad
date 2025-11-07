@@ -106,8 +106,15 @@ namespace Security.Services
         }
         public async Task LogoutAsync(Guid userId)
         {
-            var user = await _users.GetByEmailAddress(""); 
+            var user = await _users.GetByIdAsync(userId);
+            if (user == null) return;
+
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            user.RefreshToken = null;
+            user.CurrentJwtId = null;
+            await _users.UpdateAsync(user);
         }
+
 
 
         private (string token, int expiresInSeconds, string jti) GenerateJwtToken(User user)
