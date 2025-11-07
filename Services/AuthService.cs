@@ -104,6 +104,11 @@ namespace Security.Services
 
             return (true, resp);
         }
+        public async Task LogoutAsync(Guid userId)
+        {
+            var user = await _users.GetByEmailAddress(""); 
+        }
+
 
         private (string token, int expiresInSeconds, string jti) GenerateJwtToken(User user)
         {
