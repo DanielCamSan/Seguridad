@@ -1,6 +1,5 @@
 ﻿namespace Security.Models.DTOS
 {
-    // Security/Models/DTOS/LoginResponseDto.cs
     namespace Security.Models.DTOS
     {
         public class LoginResponseDto
@@ -10,7 +9,7 @@
             public required string AccessToken { get; set; }
             public required string RefreshToken { get; set; }
             public string TokenType { get; set; } = "Bearer";
-            public int ExpiresIn { get; set; } // en segundos
+            public int ExpiresIn { get; set; }
         }
 
         public class UserDto
