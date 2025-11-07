@@ -17,6 +17,7 @@ namespace Security.Services
         {
             var doc = new Doctor
             {
+                Id = Guid.NewGuid(),
                 Name = dto.Name.Trim(),
                 Specialty = dto.Specialty.Trim(),
                 HospitalId = dto.HospitalId
