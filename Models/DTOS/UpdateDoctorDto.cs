@@ -5,8 +5,8 @@ namespace Security.Models.DTOS
     public record UpdateDoctorDto
     {
         [Required]
-        public string Name { get; set; } = string.Empty;
-        public string Specialty { get; set; } = string.Empty; 
-        public Guid HospitalId { get; set;  }
+        public string Name { get; init; } = string.Empty;
+        public string Specialty { get; init; } = string.Empty; 
+        public Guid HospitalId { get; init;  }
     }
 }
