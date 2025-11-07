@@ -10,5 +10,7 @@ namespace Security.Services
         Task<Hospital> CreateHospital(CreateHospitalDto dto);
         Task<Hospital> UpdateHospital(UpdateHospitalDto dto, Guid id);
         Task DeleteHospital(Guid id);
+
+        Task<bool> IsUserHospitalAdmin(Guid userId, Guid hospitalId);
     }
 }

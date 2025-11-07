@@ -51,5 +51,10 @@ namespace Security.Services
             if (hospital == null) return;
             await _repo.Delete(hospital);
         }
+        public Task<bool> IsUserHospitalAdmin(Guid userId, Guid hospitalId)
+        {
+            return Task.FromResult(false);
+        }
+
     }
 }

@@ -9,5 +9,6 @@
 
 
         public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
+        public ICollection<User> Users { get; set; } = new List<User>();
     }
 }

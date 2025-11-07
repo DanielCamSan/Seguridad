@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
 using Security.Services;
+using System.Security.Claims;
 
 namespace Security.Controllers
 {
     [ApiController]
     [Route("/api/[controller]")]
-    public class HospitalController:ControllerBase
+    public class HospitalController : ControllerBase
     {
         private readonly IHospitalService _service;
         public HospitalController(IHospitalService service)
@@ -22,6 +23,7 @@ namespace Security.Controllers
             IEnumerable<Hospital> items = await _service.GetAll();
             return Ok(items);
         }
+
         [HttpGet("{id:guid}")]
         [Authorize]
         public async Task<IActionResult> GetOne(Guid id)
@@ -29,6 +31,7 @@ namespace Security.Controllers
             var hospital = await _service.GetOne(id);
             return Ok(hospital);
         }
+
         [HttpPost]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateHospital([FromBody] CreateHospitalDto dto)
@@ -37,20 +40,46 @@ namespace Security.Controllers
             var hospital = await _service.CreateHospital(dto);
             return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
         }
+
         [HttpPut("{id:guid}")]
         [Authorize]
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(currentUserId) && Guid.TryParse(currentUserId, out var userId))
+            {
+                var isHospitalAdmin = await _service.IsUserHospitalAdmin(userId, id);
+                if (!isHospitalAdmin && !User.IsInRole("Admin"))
+                {
+                    return Forbid("You are not the administrator of this hospital");
+                }
+            }
+
             var hospital = await _service.UpdateHospital(dto, id);
             return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "AdminOnly")] 
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(currentUserId) && Guid.TryParse(currentUserId, out var userId))
+            {
+                if (!User.IsInRole("Admin"))
+                {
+                    var isHospitalAdmin = await _service.IsUserHospitalAdmin(userId, id);
+                    if (!isHospitalAdmin)
+                    {
+                        return Forbid("You are not the administrator of this hospital");
+                    }
+                }
+            }
+
             await _service.DeleteHospital(id);
             return NoContent();
         }
