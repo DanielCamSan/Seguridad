@@ -15,8 +15,21 @@ namespace Security.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<User>();
-            modelBuilder.Entity<Hospital>();
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+            modelBuilder.Entity<Hospital>()
+                .HasMany(h => h.Doctors)
+                .WithOne(d => d.Hospital)
+                .HasForeignKey(d => d.HospitalId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Doctor>(entity =>
+            {
+                entity.Property(d => d.Name).IsRequired().HasMaxLength(100);
+                entity.Property(d => d.Speciallity).HasMaxLength(100);
+            });
+
         }
     }
 }

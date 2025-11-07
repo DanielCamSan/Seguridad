@@ -147,9 +147,9 @@ namespace Security.Services
             return Base64UrlEncoder.Encode(bytes);
         }
 
-        public async Task<bool> LogoutAsync(string userEmail)
+        public async Task<bool> LogoutAsync(Guid id)
         {
-            var user = await _users.GetByEmailAddress(userEmail);
+            var user = await _users.GetByIdAsync(id);
             if (user == null) return false;
 
             // Invalidar el refresh token

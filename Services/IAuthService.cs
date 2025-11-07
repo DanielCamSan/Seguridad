@@ -9,6 +9,6 @@ namespace Security.Services
         Task<string> RegisterAsync(RegisterDto dto);
         Task<(bool ok, LoginResponseDto? response)> RefreshAsync(RefreshRequestDto dto);
 
-        Task<bool> LogoutAsync(string userEmail);
+        Task<bool> LogoutAsync(Guid id);
     }
 }
