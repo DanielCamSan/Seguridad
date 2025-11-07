@@ -10,6 +10,7 @@ namespace Security.Data
         {
         }
         public DbSet<User> Users => Set<User>();
+        public DbSet<Doctor> Doctors => Set<Doctor>();
         public DbSet<Hospital> Hospitals => Set<Hospital>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

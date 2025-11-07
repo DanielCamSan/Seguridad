@@ -1,0 +1,186 @@
+{
+	"info": {
+		"_postman_id": "c6e22440-012b-4e1b-bd2c-79a14556d93b",
+		"name": "hospital",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9796556"
+	},
+	"item": [
+		{
+			"name": "Hospital Copy",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"daniel@example.com\",\r\n    \"username\": \"daniel\",\r\n    \"password\": \"AdminPassword123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@example.com\",\r\n    \"password\": \"AdminPassword123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refreshToken\": \"TWWznQpMcnCMyxmgBwVvD8AgxmDg1YdiEGWz5lbkPoCukxxcx_4x5rTk3tu_GbMJHLgkgIgXcJgoJgQozKfZBw\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/refresh",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAll Hospital",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/hospital",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"hospital"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get One Hospital",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/hospital/120209b7-3f90-452a-8ad1-367d751ff504",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"hospital",
+								"120209b7-3f90-452a-8ad1-367d751ff504"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Hospital",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Univalle\",\r\n    \"address\": \"America\",\r\n    \"type\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/hospital",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"hospital"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
