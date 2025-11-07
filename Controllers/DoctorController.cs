@@ -30,7 +30,7 @@ namespace Security.Controllers
             return Ok(doctor);
         }
         [HttpPost]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> CreateDoctor([FromBody] CreateDoctorDto dto)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -38,7 +38,7 @@ namespace Security.Controllers
             return CreatedAtAction(nameof(GetOne), new { id = doctor.Id }, doctor);
         }
         [HttpPut("{id:guid}")]
-        [Authorize]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> UpdateDoctor([FromBody] UpdateDoctorDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -47,7 +47,7 @@ namespace Security.Controllers
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> DeleteDoctor(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
