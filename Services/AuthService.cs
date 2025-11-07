@@ -4,7 +4,6 @@ using Security.Models;
 using Security.Models.DTOS;
 using Security.Models.DTOS.Security.Models.DTOS;
 using Security.Repositories;
-using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -103,6 +102,18 @@ namespace Security.Services
             };
 
             return (true, resp);
+        }
+
+        public async Task LogoutAsync(Guid userId) 
+        {
+            var user = await _users.GetByIdAsync(userId);
+            if (user == null) return;
+
+            // revoca el refresh token actual
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            user.RefreshToken = null;
+
+            await _users.UpdateAsync(user);
         }
 
         private (string token, int expiresInSeconds, string jti) GenerateJwtToken(User user)

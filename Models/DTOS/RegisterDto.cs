@@ -1,7 +1,10 @@
-﻿namespace Security.Models.DTOS
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Security.Models.DTOS
 {
     public record RegisterDto
     {
+        [Required]
         public string Username { get; init; }
         public string Email { get; init; }
         public string Password { get; init; }
