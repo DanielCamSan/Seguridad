@@ -15,6 +15,7 @@ namespace Security.Services
         {
             var hospital = new Hospital
             {
+                AdminId = dto.AdminId,
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
                 Address = dto.Address,
@@ -37,7 +38,7 @@ namespace Security.Services
         {
             Hospital? hospital = await GetOne(id);
             if (hospital == null) throw new Exception("Hospital doesnt exist.");
-
+            hospital.AdminId = dto.AdminId;
             hospital.Name = dto.Name;
             hospital.Address = dto.Address;
             hospital.Type = dto.Type;
