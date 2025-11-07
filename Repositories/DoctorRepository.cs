@@ -23,6 +23,10 @@ namespace Security.Repositories
             await _db.SaveChangesAsync();
         }
 
+        public Task<bool> ExistsByHospitalId(Guid hospitalId)
+        {
+            return _db.Doctors.AsNoTracking().AnyAsync(p => p.HospitalId == hospitalId);
+        }
         public async Task<IEnumerable<Doctor>> GetAll()
         {
             return await _db.Doctors.ToListAsync();

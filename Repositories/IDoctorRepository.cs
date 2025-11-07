@@ -9,5 +9,7 @@ namespace Security.Repositories
         Task Add(Doctor doctor);
         Task Update(Doctor doctor);
         Task Delete(Doctor doctor);
+
+        Task<bool> ExistsByHospitalId(Guid hospitalId);
     }
 }

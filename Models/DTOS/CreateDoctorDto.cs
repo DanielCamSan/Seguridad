@@ -5,11 +5,10 @@ namespace Security.Models.DTOS
     public class CreateDoctorDto
     {
         [Required]
-        public string Name { get; set; }
-        public string Specialty { get; set; }
-        public int Type { get; set; }
+        public Guid HospitalId { get; init; }
 
         [Required]
-        Guid HospitalId { get; set; }
+        public string Name { get; set; }
+        public string Specialty { get; set; }
     }
 }
