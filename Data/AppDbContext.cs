@@ -11,12 +11,20 @@ namespace Security.Data
         }
         public DbSet<User> Users => Set<User>();
         public DbSet<Hospital> Hospitals => Set<Hospital>();
+        public DbSet<Doctor> Doctors => Set<Doctor>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>();
             modelBuilder.Entity<Hospital>();
+            modelBuilder.Entity<Doctor>(b=>
+            {
+                b.HasOne(d => d.Hospital)
+                 .WithMany(h => h.Doctors)
+                 .HasForeignKey(d => d.HospitalId)
+                 .OnDelete(DeleteBehavior.SetNull);
+            });
         }
     }
 }

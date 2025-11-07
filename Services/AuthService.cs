@@ -104,6 +104,21 @@ namespace Security.Services
 
             return (true, resp);
         }
+        //quitar el token para el logout
+        public async Task<bool> RevokeRefreshTokenAsync(RefreshRequestDto dto)
+        {
+            var user = await _users.GetByRefreshToken(dto.RefreshToken);
+            if (user == null) return false;
+
+            // Si el token no es el mismo o ya fue quitado no se hace nada
+            if (user.RefreshToken != dto.RefreshToken) return false;
+            if (user.RefreshTokenRevokedAt.HasValue) return false;
+
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            user.RefreshToken = null; // elimino el tok 
+            await _users.UpdateAsync(user);
+            return true;
+        }
 
         private (string token, int expiresInSeconds, string jti) GenerateJwtToken(User user)
         {

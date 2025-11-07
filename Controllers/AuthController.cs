@@ -36,5 +36,13 @@ namespace Security.Controllers
             if (!ok || response is null) return Unauthorized();
             return Ok(response);
         }
+        //logouta
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] RefreshRequestDto dto)
+        {
+            var revoked = await _service.RevokeRefreshTokenAsync(dto);
+            if (!revoked) return NotFound();
+            return NoContent();
+        }
     }
 }

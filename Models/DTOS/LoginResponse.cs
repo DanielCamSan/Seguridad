@@ -24,6 +24,7 @@
         {
             public required string RefreshToken { get; set; }
         }
+
     }
 
 }
