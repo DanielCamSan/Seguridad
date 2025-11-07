@@ -36,5 +36,19 @@ namespace Security.Controllers
             if (!ok || response is null) return Unauthorized();
             return Ok(response);
         }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+         
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
+
+            var ok = await _service.LogoutAsync(userId);
+            if (!ok) return NotFound(new { message = "Usuario no encontrado" });
+
+            return Ok(new { message = "Logout exitoso. Refresh token invalidado." });
+        }
     }
 }
