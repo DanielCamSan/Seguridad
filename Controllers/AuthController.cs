@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Security.Models.DTOS;
 using Security.Models.DTOS.Security.Models.DTOS;
 using Security.Services;
@@ -35,6 +36,16 @@ namespace Security.Controllers
             var (ok, response) = await _service.RefreshAsync(dto);
             if (!ok || response is null) return Unauthorized();
             return Ok(response);
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout([FromBody] RefreshRequestDto dto)
+        {
+            var success = await _service.LogoutAsync(dto.RefreshToken);
+            if (!success) return BadRequest("Invalid refresh token");
+
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 }

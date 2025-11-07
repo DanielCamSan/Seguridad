@@ -72,23 +72,22 @@ namespace Security.Services
 
         public async Task<(bool ok, LoginResponseDto? response)> RefreshAsync(RefreshRequestDto dto)
         {
-            // Buscar usuario que tenga ese refresh token (simple)
             var user = await _users.GetByRefreshToken(dto.RefreshToken);
             if (user == null) return (false, null);
 
-            // Validaciones de refresh
+            // Validaciones de refresh (agregar validación de revocado)
             if (user.RefreshToken != dto.RefreshToken) return (false, null);
-            if (user.RefreshTokenRevokedAt.HasValue) return (false, null);
-            if (!user.RefreshTokenExpiresAt.HasValue || user.RefreshTokenExpiresAt.Value < DateTime.UtcNow) return (false, null);
+            if (user.RefreshTokenRevokedAt.HasValue) return (false, null); // Token revocado
+            if (!user.RefreshTokenExpiresAt.HasValue || user.RefreshTokenExpiresAt.Value < DateTime.UtcNow)
+                return (false, null);
 
-            // Rotación: generar nuevo access + refresh y revocar el anterior
             var (accessToken, expiresIn, jti) = GenerateJwtToken(user);
             var newRefresh = GenerateSecureRefreshToken();
             var refreshDays = int.Parse(_configuration["Jwt:RefreshDays"] ?? "14");
 
             user.RefreshToken = newRefresh;
             user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(refreshDays);
-            user.RefreshTokenRevokedAt = null; // seguimos activo
+            user.RefreshTokenRevokedAt = null;
             user.CurrentJwtId = jti;
             await _users.UpdateAsync(user);
 
@@ -145,6 +144,17 @@ namespace Security.Services
             // 64 bytes aleatorios en Base64Url
             var bytes = RandomNumberGenerator.GetBytes(64);
             return Base64UrlEncoder.Encode(bytes);
+        }
+
+        public async Task<bool> LogoutAsync(string refreshToken)
+        {
+            var user = await _users.GetByRefreshToken(refreshToken);
+            if (user == null) return false;
+
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            await _users.UpdateAsync(user);
+
+            return true;
         }
     }
 }
