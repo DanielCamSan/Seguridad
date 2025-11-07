@@ -14,6 +14,7 @@ namespace Security.Controllers
         {
             _service = service;
         }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -29,12 +30,24 @@ namespace Security.Controllers
             return Ok(response);
         }
 
+        // --- Asegúrate de que este es el ÚNICO método Refresh ---
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto dto)
         {
             var (ok, response) = await _service.RefreshAsync(dto);
             if (!ok || response is null) return Unauthorized();
             return Ok(response);
+        }
+
+        // POST: api/v1/auth/logout (EJERCICIO 2)
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] RefreshRequestDto dto)
+        {
+            // Usamos el RefreshToken del DTO para revocarlo en el servicio
+            var ok = await _service.LogoutAsync(dto.RefreshToken);
+
+            // Si es exitoso (o si ya estaba revocado/no existía), devolvemos 204 No Content
+            return ok ? NoContent() : Unauthorized();
         }
     }
 }

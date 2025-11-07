@@ -26,7 +26,7 @@ builder.Services
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey=true,
+            ValidateIssuerSigningKey = true,
             ValidIssuer = jwt["Issuer"],
             ValidAudience = jwt["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
@@ -40,10 +40,18 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
+// Registro de Repositorios
 builder.Services.AddScoped<IHospitalRepository, HospitalRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IDoctorRepository, DoctorRepository>(); // <--- EJERCICIO 1
+
+// Registro de Servicios
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IDoctorService, DoctorService>(); // <--- EJERCICIO 1
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

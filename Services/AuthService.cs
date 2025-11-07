@@ -4,7 +4,6 @@ using Security.Models;
 using Security.Models.DTOS;
 using Security.Models.DTOS.Security.Models.DTOS;
 using Security.Repositories;
-using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -22,6 +21,8 @@ namespace Security.Services
             _users = users;
             _configuration = configuration;
         }
+
+        // ... (LoginAsync, RegisterAsync, RefreshAsync - Sin Cambios Funcionales) ...
 
         public async Task<(bool ok, LoginResponseDto? response)> LoginAsync(LoginDto dto)
         {
@@ -61,6 +62,7 @@ namespace Security.Services
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             var user = new User
             {
+                Id = Guid.NewGuid(),
                 Email = dto.Email,
                 PasswordHash = hashedPassword,
                 Username = dto.Username,
@@ -105,6 +107,19 @@ namespace Security.Services
             return (true, resp);
         }
 
+        public async Task<bool> LogoutAsync(string refreshToken) // <--- EJERCICIO 2
+        {
+            var user = await _users.GetByRefreshToken(refreshToken);
+            if (user == null) return false;
+
+            // Revocar el token
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            user.RefreshToken = null;
+
+            await _users.UpdateAsync(user);
+            return true;
+        }
+
         private (string token, int expiresInSeconds, string jti) GenerateJwtToken(User user)
         {
             var jwtSection = _configuration.GetSection("Jwt");
@@ -121,6 +136,8 @@ namespace Security.Services
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim(JwtRegisteredClaimNames.Jti, jti),
+                // Añadir el HospitalId al token si existe (Para Ejercicio 3)
+                new Claim("HospitalId", user.HospitalId?.ToString() ?? string.Empty)
             };
 
             var keyBytes = Encoding.UTF8.GetBytes(key);
@@ -142,7 +159,6 @@ namespace Security.Services
 
         private static string GenerateSecureRefreshToken()
         {
-            // 64 bytes aleatorios en Base64Url
             var bytes = RandomNumberGenerator.GetBytes(64);
             return Base64UrlEncoder.Encode(bytes);
         }
