@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
 using Security.Services;
+using System.IdentityModel.Tokens.Jwt;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Security.Controllers
 {
@@ -42,8 +44,28 @@ namespace Security.Controllers
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            var hospital = await _service.GetOne(id);
+            if (hospital == null) return NotFound();
+
+            var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                // Usuario autenticado pero sin claim válido -> 403
+                return Forbid();
+            }
+
+            if (hospital.AdminId != userId)
+            {
+                // No es el administrador asignado -> 403 Forbidden
+                return Forbid();
+            }
+
+            await _service.UpdateHospital(dto, id);
+            return NoContent();
+            /*if (!ModelState.IsValid) return ValidationProblem(ModelState);
             var hospital = await _service.UpdateHospital(dto, id);
-            return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
+            return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);*/
         }
 
         [HttpDelete("{id:guid}")]
