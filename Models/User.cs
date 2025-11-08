@@ -14,7 +14,7 @@ namespace Security.Models
         public DateTime? RefreshTokenRevokedAt { get; set; }
         public string? CurrentJwtId { get; set; }
 
-        public Guid hospitalId { get; set; }
+        public Guid? hospitalId { get; set; }
         public Hospital? Hospital { get; set; }
 
     }

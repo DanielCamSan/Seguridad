@@ -21,13 +21,18 @@ namespace Security.Data
                 .HasOne(u => u.Hospital)
                 .WithMany()
                 .HasForeignKey(u => u.hospitalId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+                
 
             modelBuilder.Entity<Hospital>()
                 .HasOne(h => h.Admin)
                 .WithMany()
                 .HasForeignKey(h => h.AdminId)
                 .OnDelete(DeleteBehavior.Restrict);
+    
+
 
             modelBuilder.Entity<Doctor>();
         }
