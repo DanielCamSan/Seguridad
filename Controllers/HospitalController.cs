@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
 using Security.Services;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Security.Controllers
 {
@@ -15,6 +17,8 @@ namespace Security.Controllers
         {
             _service = service;
         }
+
+        private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
 
         [HttpGet]
         public async Task<IActionResult> GetAllHospitals()
@@ -42,15 +46,33 @@ namespace Security.Controllers
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.UpdateHospital(dto, id);
-            return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
+
+            var hospital = await _service.GetOne(id);
+            if (hospital == null) return NotFound();
+
+            if (hospital.AdminId != CurrentUserId)
+            {
+                return Forbid();
+            }
+
+            var updatedHospital = await _service.UpdateHospital(dto, id);
+            return CreatedAtAction(nameof(GetOne), new { id = updatedHospital.Id }, updatedHospital);
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize]
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            var hospital = await _service.GetOne(id);
+            if (hospital == null) return NoContent();
+
+            if (hospital.AdminId != CurrentUserId)
+            {
+                return Forbid();
+            }
+
             await _service.DeleteHospital(id);
             return NoContent();
         }
