@@ -19,6 +19,12 @@ namespace Security.Data
             modelBuilder.Entity<User>();
             modelBuilder.Entity<Hospital>();
             modelBuilder.Entity<Doctor>();
+
+            modelBuilder.Entity<Hospital>()
+                .HasOne(h => h.Admin)
+                .WithMany(u => u.AdministratedHospitals)
+                .HasForeignKey(h => h.AdminId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

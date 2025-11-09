@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace Security.Models
 {
@@ -13,5 +14,7 @@ namespace Security.Models
         public DateTime? RefreshTokenExpiresAt { get; set; }
         public DateTime? RefreshTokenRevokedAt { get; set; }
         public string? CurrentJwtId { get; set; }
+
+        public virtual ICollection<Hospital> AdministratedHospitals { get; set; } = new List<Hospital>();
     }
 }

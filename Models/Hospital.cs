@@ -1,4 +1,7 @@
-﻿namespace Security.Models
+﻿using Security.Models;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Security.Models
 {
     public class Hospital
     {
@@ -6,5 +9,8 @@
         public string Name { get; set; }
         public string Address { get; set; }
         public int Type { get; set; }
+        public Guid? AdminId { get; set; }
+        [ForeignKey("AdminId")]
+        public virtual User Admin { get; set; }
     }
 }
