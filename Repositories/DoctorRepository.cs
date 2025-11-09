@@ -21,8 +21,12 @@ namespace Security.Repositories
         public async  Task DeleteDoctorAsync(Guid id)
         {
 
-            _db.Remove(new Doctor { Id = id });
-            await _db.SaveChangesAsync();
+            var doctor = await _db.Doctors.FindAsync(id);
+            if (doctor != null)
+            {
+                _db.Doctors.Remove(doctor);
+                await _db.SaveChangesAsync();
+            }
         }
 
         public async Task<IEnumerable<Doctor>> GetAllDoctorsAsync()

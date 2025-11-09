@@ -73,8 +73,27 @@ namespace Security.Controllers
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            var hospital = await _service.GetOne(id);
+            if (hospital == null) return NotFound();
+
+            var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Forbid();
+            }
+
+            if (hospital.AdminId != userId)
+            {
+                return Forbid();
+            }
+
             await _service.DeleteHospital(id);
             return NoContent();
+            /*
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
+            await _service.DeleteHospital(id);
+            return NoContent();*/
         }
     }
 }
