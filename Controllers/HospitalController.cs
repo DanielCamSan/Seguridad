@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
 using Security.Services;
+using System.Security.Claims;
 
 namespace Security.Controllers
 {
@@ -42,17 +43,66 @@ namespace Security.Controllers
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.UpdateHospital(dto, id);
-            return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
+           // var hospital = await _service.UpdateHospital(dto, id);
+            //return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                              ?? User.FindFirst(ClaimTypes.PrimarySid)?.Value
+                              ?? User.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            var hospital = await _service.GetOne(id);
+            if (hospital == null) return NotFound();
+
+            if (hospital.AdminUserId != currentUserId)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                var updatedHospital = await _service.UpdateHospital(dto, id);
+                return CreatedAtAction(nameof(GetOne), new { id = updatedHospital.Id }, updatedHospital);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpDelete("{id:guid}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
+            //await _service.DeleteHospital(id);
+
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                              ?? User.FindFirst(ClaimTypes.PrimarySid)?.Value
+                              ?? User.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            
+            var hospital = await _service.GetOne(id);
+            if (hospital == null) return NoContent();
+
+            
+            if (hospital.AdminUserId != currentUserId)
+            {
+                return Forbid();
+            }
             await _service.DeleteHospital(id);
             return NoContent();
         }
+
     }
 }
