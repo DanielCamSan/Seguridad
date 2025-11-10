@@ -19,3 +19,5 @@ TestResult*/
 
 Migrations/
 "@ | Out-File -Encoding utf8 .gitignore
+
+.idea

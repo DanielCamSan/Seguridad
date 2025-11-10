@@ -56,6 +56,18 @@ namespace Security.Services
             return (true, resp);
         }
 
+        public async Task<bool> LogoutAsync(LogoutDto dto)
+        {
+            var user = await _users.GetByRefreshToken(dto.RefreshToken);
+            if (user is null) return false;
+
+            user.RefreshToken = null;
+            user.RefreshTokenExpiresAt = DateTime.MinValue;
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            await _users.UpdateAsync(user);
+            return true;
+        }
+
         public async Task<string> RegisterAsync(RegisterDto dto)
         {
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
