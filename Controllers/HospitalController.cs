@@ -14,6 +14,7 @@ namespace Security.Controllers
         public HospitalController(IHospitalService service)
         {
             _service = service;
+
         }
 
         [HttpGet]
