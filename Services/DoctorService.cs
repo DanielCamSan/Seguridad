@@ -7,12 +7,14 @@ namespace Security.Services
 {
     public class DoctorService : IDoctorService
     {
-        private readonly IDoctorRepository _repo;
-        public DoctorService(IDoctorRepository repo)
+        private readonly IDoctorRepository _doctorRepo;
+        private readonly IHospitalRepository? _hospitalRepo;
+        public DoctorService(IDoctorRepository doctorRepo,IHospitalRepository hospitalRepo)
         {
-            _repo = repo;
+            _doctorRepo = doctorRepo;
+            _hospitalRepo = hospitalRepo;
         }
-        public async Task<Doctor> CreateDoctor(CreateDoctorDto dto)
+        public async Task<DoctorResponseDto> CreateDoctor(CreateDoctorDto dto)
         {
             var doctor = new Doctor
             {
@@ -21,37 +23,94 @@ namespace Security.Services
                 Specialty = dto.Specialty,
                 HospitalId = dto.HospitalId
             };
-            await _repo.Add(doctor);
-            return doctor;
+            var hospital = await _hospitalRepo.GetOne(dto.HospitalId);
+            if (hospital == null) throw new Exception("Hospital doesnt exist.");
+            doctor.Hospital = hospital;
+            hospital.Doctors.Add(doctor);
+            
+            
+            await _doctorRepo.Add(doctor);
+            await _hospitalRepo.Update(hospital);
+            return new DoctorResponseDto()
+            {
+                Id = doctor.Id,
+                Name = doctor.Name,
+                Specialty = doctor.Specialty,
+                Hospital = new HospitalResponseDto
+                {
+                    Id = hospital.Id,
+                    Name = hospital.Name,
+                    Address = hospital.Address,
+                    Type = hospital.Type
+                }
+            };
         }
 
-        public async Task<IEnumerable<Doctor>> GetAll()
+        public async Task<IEnumerable<DoctorResponseDto>> GetAll()
         {
-            return await _repo.GetAll();
+            IEnumerable<Doctor> doctors = await _doctorRepo.GetAll();
+            return doctors.Select(d => new DoctorResponseDto()
+            {
+                Id = d.Id,
+                Name = d.Name,
+                Specialty = d.Specialty,
+                Hospital = new HospitalResponseDto
+                {
+                    Id = d.Hospital.Id,
+                    Name = d.Hospital.Name,
+                    Address = d.Hospital.Address,
+                    Type = d.Hospital.Type
+                }
+            });
         }
 
-        public async Task<Doctor> GetOne(Guid id)
+        public async Task<DoctorResponseDto> GetOne(Guid id)
         {
-            return await _repo.GetOne(id);
+            Doctor doctor= await _doctorRepo.GetOne(id);
+            return new  DoctorResponseDto()
+            {
+                Id = doctor.Id,
+                Name = doctor.Name,
+                Specialty = doctor.Specialty,
+                Hospital = new HospitalResponseDto
+                {
+                    Id = doctor.Hospital.Id,
+                    Name = doctor.Hospital.Name,
+                    Address = doctor.Hospital.Address,
+                    Type = doctor.Hospital.Type
+                }
+            };
         }
         
-        public async Task<Doctor> UpdateDoctor(UpdateDoctorDto dto, Guid id)
+        public async Task<DoctorResponseDto> UpdateDoctor(UpdateDoctorDto dto, Guid id)
         {
-            Doctor? doctor = await GetOne(id);
+            Doctor? doctor = await _doctorRepo.GetOne(id);
             if (doctor == null) throw new Exception("Doctor doesnt exist.");
 
             doctor.Name = dto.Name;
             doctor.Specialty = dto.Specialty;
             doctor.HospitalId = dto.HospitalId;
 
-            await _repo.Update(doctor);
-            return doctor;
+            await _doctorRepo.Update(doctor);
+            return new DoctorResponseDto()
+            {
+                Id = doctor.Id,
+                Name = doctor.Name,
+                Specialty = doctor.Specialty,
+                Hospital = new HospitalResponseDto
+                {
+                    Id = doctor.Hospital.Id,
+                    Name = doctor.Hospital.Name,
+                    Address = doctor.Hospital.Address,
+                    Type = doctor.Hospital.Type
+                }
+            };
         }
         public async Task DeleteDoctor(Guid id)
         {
-            Doctor? doctor = (await GetAll()).FirstOrDefault(h => h.Id == id);
+            Doctor? doctor = (await _doctorRepo.GetAll()).FirstOrDefault(h => h.Id == id);
             if (doctor == null) return;
-            await _repo.Delete(doctor);
+            await _doctorRepo.Delete(doctor);
         }
     }
 }

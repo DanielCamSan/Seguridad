@@ -5,10 +5,10 @@ namespace Security.Services
 {
     public interface IDoctorService
     {
-        Task<IEnumerable<Doctor>> GetAll();
-        Task<Doctor> GetOne(Guid id);
-        Task<Doctor> CreateDoctor(CreateDoctorDto dto);
-        Task<Doctor> UpdateDoctor(UpdateDoctorDto dto, Guid id);
+        Task<IEnumerable<DoctorResponseDto>> GetAll();
+        Task<DoctorResponseDto> GetOne(Guid id);
+        Task<DoctorResponseDto> CreateDoctor(CreateDoctorDto dto);
+        Task<DoctorResponseDto> UpdateDoctor(UpdateDoctorDto dto, Guid id);
         Task DeleteDoctor(Guid id);
     }
 }

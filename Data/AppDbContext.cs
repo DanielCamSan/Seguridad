@@ -21,7 +21,11 @@ namespace Security.Data
                 .HasOne(h => h.Admin)
                 .WithOne(a => a.Hospital)
                 .HasForeignKey<User>(h => h.HospitalId);
-            modelBuilder.Entity<Doctor>();
+            modelBuilder.Entity<Doctor>()
+                .HasOne(d=>d.Hospital)
+                .WithMany(h=>h.Doctors)
+                .HasForeignKey(d=>d.HospitalId)
+                .OnDelete(DeleteBehavior.Cascade);;
         }
     }
 }

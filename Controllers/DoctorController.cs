@@ -21,7 +21,7 @@ namespace Security.Controllers
         [Authorize]
         public async Task<IActionResult> GetAllDoctors()
         {
-            IEnumerable<Doctor> items = await _service.GetAll();
+            IEnumerable<DoctorResponseDto> items = await _service.GetAll();
             return Ok(items);
         }
         [HttpGet("{id:guid}")]
