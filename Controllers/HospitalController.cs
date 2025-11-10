@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
 using Security.Services;
+using System.Security.Claims;
 
 namespace Security.Controllers
 {
@@ -38,19 +39,46 @@ namespace Security.Controllers
             return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
         }
         [HttpPut("{id:guid}")]
-        [Authorize]
+        [Authorize(Policy ="AdminOnly")]
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.UpdateHospital(dto, id);
-            return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+            var hospital = await _service.GetOne(id);
+            if (hospital == null)
+            {
+                return NotFound();
+            }
+            if (hospital.AdminId == null)
+            { 
+                return Forbid("Este hospital no tiene un administrador asignado.");
+            }
+            if (hospital.AdminId.Value.ToString() != userId)return Forbid("No tienes permiso para editar este hospital.");
+            var updatedHospital = await _service.UpdateHospital(dto,id);
+            return CreatedAtAction(nameof(GetOne), new { id = updatedHospital.Id }, updatedHospital);
         }
 
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("{id:guid}")]  
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+            var hospital = await _service.GetOne(id);
+            if (hospital == null)
+            {
+                return NotFound();
+            }
+
+            if (hospital.AdminId == null || hospital.AdminId.Value.ToString() != userId)
+            {
+                return Forbid("No tienes permiso para eliminar este hospital.");
+            }
             await _service.DeleteHospital(id);
             return NoContent();
         }

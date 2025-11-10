@@ -18,7 +18,8 @@ namespace Security.Services
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
                 Address = dto.Address,
-                Type = dto.Type
+                Type = dto.Type,
+                AdminId= dto.AdminId,
             };
             await _repo.Add(hospital);
             return hospital;
@@ -41,6 +42,7 @@ namespace Security.Services
             hospital.Name = dto.Name;
             hospital.Address = dto.Address;
             hospital.Type = dto.Type;
+            hospital.AdminId= hospital.AdminId;
 
             await _repo.Update(hospital);
             return hospital;

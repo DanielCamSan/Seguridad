@@ -7,6 +7,9 @@
         public string Address { get; set; }
         public int Type { get; set; }
 
+        public Guid? AdminId { get; set; }
+
+        public User Administrator { get; set; } = default!;
         public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
     }
 }
