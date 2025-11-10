@@ -27,5 +27,10 @@ namespace Security.Repositories
             _ctx.Users.Update(user);
             await _ctx.SaveChangesAsync();
         }
+
+        public async Task<User?> getById(Guid id)
+        {
+            return await _ctx.Users.FirstOrDefaultAsync(u => u.Id == id);
+        }
     }
 }
