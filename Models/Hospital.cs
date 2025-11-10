@@ -6,5 +6,9 @@
         public string Name { get; set; }
         public string Address { get; set; }
         public int Type { get; set; }
+        public Guid AdminId { get; set; }
+        public User? Admin {  get; set; }
+        public ICollection<User> Users { get; set; } = new List<User>();
+        public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
     }
 }

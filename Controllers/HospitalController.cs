@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
 using Security.Services;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Security.Controllers
 {
@@ -42,8 +43,20 @@ namespace Security.Controllers
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.UpdateHospital(dto, id);
-            return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
+
+            var hospital = await _service.GetOne(id);
+            if (hospital is null) return NotFound();
+
+            // sacar el userId desde el token
+            var userIdStr = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Forbid();
+
+            if (hospital.AdminId != userId)
+                return Forbid();
+
+            var updated = await _service.UpdateHospital(dto, id);
+            return CreatedAtAction(nameof(GetOne), new { id = updated.Id }, updated);
         }
 
         [HttpDelete("{id:guid}")]
@@ -51,6 +64,17 @@ namespace Security.Controllers
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            var hospital = await _service.GetOne(id);
+            if (hospital is null) return NotFound();
+
+            var userIdStr = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Forbid();
+
+            if (hospital.AdminId != userId)
+                return Forbid();
+
             await _service.DeleteHospital(id);
             return NoContent();
         }
