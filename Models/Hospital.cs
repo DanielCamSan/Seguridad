@@ -9,5 +9,8 @@
 
         public Guid? DoctorlId { get; set; }
         public Doctor? Doctor { get; set; }
+
+        public Guid? AdminId { get; set; }
+        public User? Admin { get; set; }
     }
 }

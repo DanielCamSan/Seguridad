@@ -16,10 +16,19 @@ namespace Security.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<User>();
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Hospital)
+                .WithMany()
+                .HasForeignKey(u => u.HospitalId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
 
             modelBuilder.Entity<Hospital>(b =>
             {
+                b.HasOne(u => u.Admin)
+                    .WithMany()
+                    .HasForeignKey(u => u.AdminId)
+                    .OnDelete(DeleteBehavior.Restrict);
                 b.HasKey(x => x.Id);
                 b.Property(x => x.Name).IsRequired();
                 b.Property(x => x.Address).IsRequired().HasMaxLength(200); ;
