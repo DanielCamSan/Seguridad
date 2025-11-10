@@ -146,5 +146,17 @@ namespace Security.Services
             var bytes = RandomNumberGenerator.GetBytes(64);
             return Base64UrlEncoder.Encode(bytes);
         }
+        public async Task<bool> RevokeRefreshTokenAsync(RefreshRequestDto dto)
+        {
+            var user = await _users.GetByRefreshToken(dto.RefreshToken);
+            if (user is null) return false;
+
+            // si ya está expirado, simplemente devuelve false
+            if (user.RefreshToken != dto.RefreshToken) return false;
+            // marcar como inválido
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            await _users.UpdateAsync(user);
+            return true;
+        }
     }
 }
