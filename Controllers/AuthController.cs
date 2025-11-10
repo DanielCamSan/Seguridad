@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 using Security.Models.DTOS;
 using Security.Models.DTOS.Security.Models.DTOS;
 using Security.Services;
@@ -35,6 +36,16 @@ namespace Security.Controllers
             var (ok, response) = await _service.RefreshAsync(dto);
             if (!ok || response is null) return Unauthorized();
             return Ok(response);
+        }
+
+        [HttpGet("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var EmailClaim = User.FindFirst(ClaimTypes.Email);
+            if (EmailClaim is null) return Unauthorized(new { message = "Email not found" });
+            var ok = await _service.LogoutAsync(EmailClaim.ToString());
+            if (!ok) return BadRequest(new { message = "LogoutFailed", status = 404 });
+            return Ok(new { message = "Logout succesfully", status = 200 }); 
         }
     }
 }

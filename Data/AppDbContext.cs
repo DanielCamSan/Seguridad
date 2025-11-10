@@ -12,14 +12,21 @@ namespace Security.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<Hospital> Hospitals => Set<Hospital>();
 
-        public DbSet<Doctor> Doctors => Set<Doctor>(); 
+        public DbSet<Doctor> Doctors => Set<Doctor>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<User>();
+            modelBuilder.Entity<User>(u => {
+                u.HasKey(u => u.Id);
+                u.HasOne(h => h.hospital)
+                .WithOne(u => u.admin)
+                .HasForeignKey<Hospital>(h => h.AdminId);  
+                }); 
+            
             modelBuilder.Entity<Hospital>();
             modelBuilder.Entity<Doctor>(); 
+
         }
     }
 }

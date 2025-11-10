@@ -11,7 +11,7 @@ namespace Security.Repositories
 
         public async Task<IEnumerable<Doctor>> GetAll() => await _context.Doctors.ToListAsync(); 
 
-        public async Task<Doctor> GetOne(Guid id) => await _context.Doctors.FirstOrDefaultAsync(d => d.Id == id );
+        public async Task<Doctor?> GetOne(Guid id) => await _context.Doctors.FirstOrDefaultAsync(d => d.Id == id );
         public async Task Add(Doctor doctor) => await _context.Doctors.AddAsync(doctor); 
         public async Task Update(Doctor doctor) =>  _context.Doctors.Update(doctor);
         public async Task Delete(Doctor doctor) => _context.Doctors.Remove(doctor);

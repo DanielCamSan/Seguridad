@@ -20,7 +20,7 @@ namespace Security.Controllers
             IEnumerable<Doctor> docs = await _service.GetAll();
             return Ok(docs);
         }
-        [HttpGet("id:Guid")]
+        [HttpGet("{id:guid}")]
         [Authorize]
 
         public async Task<IActionResult> getOneDoc(Guid id)
@@ -38,7 +38,7 @@ namespace Security.Controllers
             return CreatedAtAction(nameof(getOneDoc), new { id = created.Id }, created);
         }
 
-        [HttpPost("id:Guid")]
+        [HttpPut("{id:guid}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateDoctor([FromBody] UpdateDoctorDto dto, Guid id)
         {
@@ -47,7 +47,7 @@ namespace Security.Controllers
             return CreatedAtAction(nameof(getOneDoc), new { id = created.Id }, created);
         }
 
-        [HttpDelete("id:Guid")]
+        [HttpDelete("{id:guid}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteDoctor(Guid id)
         {
