@@ -46,7 +46,6 @@ namespace Security.Controllers
             var userIdClaim = User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized();
-
             try
             {
                 var hospital = await _service.UpdateHospital(dto, id, userId);

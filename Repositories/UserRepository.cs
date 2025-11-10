@@ -1,4 +1,4 @@
-﻿// Security/Repositories/UserRepository.cs (ejemplo EF)
+﻿
 using Microsoft.EntityFrameworkCore;
 using Security.Data;
 using Security.Models;
