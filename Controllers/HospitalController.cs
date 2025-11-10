@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
@@ -19,7 +20,7 @@ namespace Security.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllHospitals()
         {
-            IEnumerable<Hospital> items = await _service.GetAll();
+            IEnumerable<HospitalResponseDto> items = await _service.GetAll();
             return Ok(items);
         }
         [HttpGet("{id:guid}")]
@@ -34,7 +35,9 @@ namespace Security.Controllers
         public async Task<IActionResult> CreateHospital([FromBody] CreateHospitalDto dto)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.CreateHospital(dto);
+            var userClaimsPrincipal = HttpContext.User;
+            var userId = userClaimsPrincipal.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var hospital = await _service.CreateHospital(dto, Guid.Parse(userId));
             return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
         }
         [HttpPut("{id:guid}")]
@@ -42,7 +45,9 @@ namespace Security.Controllers
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.UpdateHospital(dto, id);
+            var userClaimsPrincipal = HttpContext.User;
+            var userId = userClaimsPrincipal.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var hospital = await _service.UpdateHospital(dto, id,Guid.Parse(userId));
             return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
         }
 
@@ -51,7 +56,9 @@ namespace Security.Controllers
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            await _service.DeleteHospital(id);
+            var userClaimsPrincipal = HttpContext.User;
+            var userId = userClaimsPrincipal.FindFirst(ClaimTypes.NameIdentifier).Value;
+            await _service.DeleteHospital(id,Guid.Parse(userId));
             return NoContent();
         }
     }

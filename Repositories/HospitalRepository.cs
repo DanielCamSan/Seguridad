@@ -20,12 +20,12 @@ namespace Security.Repositories
 
         public async Task<IEnumerable<Hospital>> GetAll()
         {
-            return await _db.Hospitals.ToListAsync();
+            return await _db.Hospitals.Include(h=>h.Admin).ToListAsync();
         }
 
         public async Task<Hospital?> GetOne(Guid id)
         {
-            return await _db.Hospitals.FirstOrDefaultAsync(x => x.Id == id);
+            return await _db.Hospitals.Include(h=>h.Admin).FirstOrDefaultAsync(x => x.Id == id);
         }
         public async Task Update(Hospital hospital)
         {

@@ -10,6 +10,9 @@ namespace Security.Repositories
         private readonly AppDbContext _ctx;
         public UserRepository(AppDbContext ctx) { _ctx = ctx; }
 
+        public Task<User?> GetById(Guid id) =>
+            _ctx.Users.FirstOrDefaultAsync(u => u.Id == id);
+
         public Task<User?> GetByEmailAddress(string email) =>
             _ctx.Users.FirstOrDefaultAsync(u => u.Email == email);
 

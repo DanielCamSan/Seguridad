@@ -17,7 +17,10 @@ namespace Security.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>();
-            modelBuilder.Entity<Hospital>();
+            modelBuilder.Entity<Hospital>()
+                .HasOne(h => h.Admin)
+                .WithOne(a => a.Hospital)
+                .HasForeignKey<User>(h => h.HospitalId);
             modelBuilder.Entity<Doctor>();
         }
     }

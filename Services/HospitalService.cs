@@ -1,4 +1,6 @@
-﻿using Security.Models;
+﻿using System.Runtime.InteropServices.ComTypes;
+using Microsoft.AspNetCore.Routing.Matching;
+using Security.Models;
 using Security.Models.DTOS;
 using Security.Repositories;
 
@@ -6,50 +8,118 @@ namespace Security.Services
 {
     public class HospitalService : IHospitalService
     {
-        private readonly IHospitalRepository _repo;
-        public HospitalService(IHospitalRepository repo)
+        private readonly IHospitalRepository _hospitalRepo;
+        private readonly IUserRepository _userRepo;
+        public HospitalService(IHospitalRepository hospitalRepo, IUserRepository userRepo)
         {
-            _repo = repo;
+            _hospitalRepo = hospitalRepo;
+            _userRepo = userRepo;
         }
-        public async Task<Hospital> CreateHospital(CreateHospitalDto dto)
+        public async Task<HospitalResponseDto> CreateHospital(CreateHospitalDto dto, Guid userId)
         {
+            User admin = await _userRepo.GetById(userId);
+            
             var hospital = new Hospital
             {
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
                 Address = dto.Address,
-                Type = dto.Type
+                Type = dto.Type,
+                AdminId = userId,
+                Admin = admin
             };
-            await _repo.Add(hospital);
-            return hospital;
+            var hospitalResponse = new HospitalResponseDto
+            {
+                Id = hospital.Id,
+                Name = hospital.Name,
+                Address = hospital.Address,
+                Type = hospital.Type,
+                Admin = new UserResponse
+                {
+                    Id = hospital.Admin.Id.ToString(),
+                    Email = hospital.Admin.Email,
+                    Username = hospital.Admin.Username,
+                }
+            };
+            
+            admin.HospitalId = hospital.Id;
+            admin.Hospital = hospital;
+                
+            
+            await _hospitalRepo.Add(hospital);
+            await _userRepo.UpdateAsync(admin);
+            return hospitalResponse;
         }
 
-        public async Task<IEnumerable<Hospital>> GetAll()
+        public async Task<IEnumerable<HospitalResponseDto>> GetAll()
         {
-            return await _repo.GetAll();
+            IEnumerable<Hospital> hospitals = await _hospitalRepo.GetAll();
+            return hospitals.Select(h=> new HospitalResponseDto()
+            {
+                Id = h.Id,
+                Name = h.Name,
+                Address = h.Address,
+                Type = h.Type,
+                Admin = new UserResponse
+                {
+                    Id = h.AdminId.ToString(),
+                    Email = h.Admin.Email,
+                    Username = h.Admin.Username,
+                }
+            });
         }
 
-        public async Task<Hospital> GetOne(Guid id)
+        public async Task<HospitalResponseDto> GetOne(Guid id)
         {
-            return await _repo.GetOne(id);
+            Hospital hospital = await _hospitalRepo.GetOne(id);
+            
+            return new  HospitalResponseDto()
+            {
+                Id = hospital.Id,
+                Name = hospital.Name,
+                Address = hospital.Address,
+                Type = hospital.Type,
+                Admin = new UserResponse
+                {
+                    Id = hospital.Admin.Id.ToString(),
+                    Email = hospital.Admin.Email,
+                    Username = hospital.Admin.Username,
+                }
+            };
         }
-        public async Task<Hospital> UpdateHospital(UpdateHospitalDto dto, Guid id)
+        public async Task<HospitalResponseDto> UpdateHospital(UpdateHospitalDto dto, Guid id, Guid userId)
         {
-            Hospital? hospital = await GetOne(id);
+            Hospital? hospital = await _hospitalRepo.GetOne(id);
             if (hospital == null) throw new Exception("Hospital doesnt exist.");
+            if (hospital.AdminId != userId) throw new UnauthorizedAccessException();
 
             hospital.Name = dto.Name;
             hospital.Address = dto.Address;
             hospital.Type = dto.Type;
 
-            await _repo.Update(hospital);
-            return hospital;
+            await _hospitalRepo.Update(hospital);
+            return new HospitalResponseDto()
+            {
+                Id = hospital.Id,
+                Name = hospital.Name,
+                Address = hospital.Address,
+                Type = hospital.Type,
+                Admin = new UserResponse
+                {
+                    Id = hospital.Admin.Id.ToString(),
+                    Email = hospital.Admin.Email,
+                    Username = hospital.Admin.Username,
+                }
+            };
         }
-        public async Task DeleteHospital(Guid id)
+        public async Task DeleteHospital(Guid id, Guid userId)
         {
-            Hospital? hospital = (await GetAll()).FirstOrDefault(h => h.Id == id);
+            
+            Hospital? hospital = (await _hospitalRepo.GetAll()).FirstOrDefault(h => h.Id == id);
             if (hospital == null) return;
-            await _repo.Delete(hospital);
+            if (hospital.AdminId != userId) throw new UnauthorizedAccessException();
+
+            await _hospitalRepo.Delete(hospital);
         }
     }
 }
