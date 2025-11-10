@@ -146,5 +146,14 @@ namespace Security.Services
             var bytes = RandomNumberGenerator.GetBytes(64);
             return Base64UrlEncoder.Encode(bytes);
         }
+
+        public async Task<bool> LogoutAsync(Guid userId)
+        {
+            var user = await _users.GetById(userId);
+            if (user == null) return false;
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+            await _users.UpdateAsync(user);
+            return true;
+        }
     }
 }
