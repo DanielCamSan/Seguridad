@@ -8,6 +8,8 @@
         public int Type { get; set; }
 
         public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
+        public Guid AdminId { get; set; }
+        public User? Admin { get; set; }
 
     }
 }

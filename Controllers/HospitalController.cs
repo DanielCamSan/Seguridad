@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Security.Models;
 using Security.Models.DTOS;
 using Security.Services;
+using System.Security.Claims;
 
 namespace Security.Controllers
 {
@@ -42,17 +43,38 @@ namespace Security.Controllers
         public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.UpdateHospital(dto, id);
-            return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
+
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdString, out var userId))
+                return Unauthorized();
+
+            var (ok, message) = await _service.UpdateHospital(dto,id, userId);
+            if (!ok)
+            {
+                if (message.Contains("permiso"))
+                    return Forbid();
+                return NotFound(new { message });
+            }
+            return Ok(new { message });
         }
 
         [HttpDelete("{id:guid}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteHospital(Guid id)
         {
-            if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            await _service.DeleteHospital(id);
-            return NoContent();
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdString, out var userId))
+                return Unauthorized();
+
+            var (ok, message) = await _service.DeleteHospital(id, userId);
+            if (!ok)
+            {
+                if (message.Contains("permiso"))
+                    return Forbid();
+                return NotFound(new { message });
+            }
+
+            return Ok(new { message });
         }
     }
 }

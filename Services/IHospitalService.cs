@@ -8,7 +8,7 @@ namespace Security.Services
         Task<IEnumerable<Hospital>> GetAll();
         Task<Hospital> GetOne(Guid id);
         Task<Hospital> CreateHospital(CreateHospitalDto dto);
-        Task<Hospital> UpdateHospital(UpdateHospitalDto dto, Guid id);
-        Task DeleteHospital(Guid id);
+        Task<(bool ok, string message)> UpdateHospital(UpdateHospitalDto dto, Guid id, Guid userId);
+        Task<(bool ok, string message)> DeleteHospital(Guid id, Guid userId);
     }
 }

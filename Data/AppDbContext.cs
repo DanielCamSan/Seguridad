@@ -23,7 +23,11 @@ namespace Security.Data
                 .WithOne(d => d.Hospital)
                 .HasForeignKey(d => d.HospitalId)
                 .OnDelete(DeleteBehavior.Cascade);
-
+            modelBuilder.Entity<Hospital>()
+                .HasOne(h => h.Admin)
+                .WithOne(u => u.Hospital)
+                .HasForeignKey<Hospital>(h => h.AdminId) //FK hacia user.Id
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Doctor>(entity =>
             {
                 entity.Property(d => d.Name).IsRequired().HasMaxLength(100);

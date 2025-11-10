@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Security.Models.DTOS;
 using Security.Models.DTOS.Security.Models.DTOS;
 using Security.Services;
@@ -38,15 +39,17 @@ namespace Security.Controllers
         }
 
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
-         
+
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
-                return Unauthorized();
+                return Unauthorized(new { message = "No se pudo identificar al usuario actual" });
 
-            var ok = await _service.LogoutAsync(userId);
-            if (!ok) return NotFound(new { message = "Usuario no encontrado" });
+            var success = await _service.LogoutAsync(userId);
+            if (!success)
+                return NotFound(new { message = "Usuario no encontrado" });
 
             return Ok(new { message = "Logout exitoso. Refresh token invalidado." });
         }

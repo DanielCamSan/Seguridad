@@ -147,16 +147,19 @@ namespace Security.Services
             return Base64UrlEncoder.Encode(bytes);
         }
 
-        public async Task<bool> LogoutAsync(Guid id)
+        public async Task<bool> LogoutAsync(string id)
         {
-            var user = await _users.GetByIdAsync(id);
+            // Convertir el userId (string) a Guid
+            if (!Guid.TryParse(id, out var guid))
+                return false;
+
+            var user = await _users.GetByIdAsync(guid);
             if (user == null) return false;
 
             // Invalidar el refresh token
-            user.RefreshTokenRevokedAt = DateTime.UtcNow;
             user.RefreshToken = null;
             user.RefreshTokenExpiresAt = null;
-            user.CurrentJwtId = null;
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
 
             await _users.UpdateAsync(user);
             return true;
