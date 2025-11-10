@@ -40,6 +40,9 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
+builder.Services.AddScoped<IDoctorRepository, IDoctorRepository>();
+builder.Services.AddScoped<IDoctorService, IDoctorService>();
 builder.Services.AddScoped<IHospitalRepository, HospitalRepository>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddScoped<IAuthService, AuthService>();

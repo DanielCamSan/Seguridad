@@ -11,14 +11,15 @@ namespace Security.Services
         {
             _repo = repo;
         }
-        public async Task<Hospital> CreateHospital(CreateHospitalDto dto)
+        public async Task<Hospital> CreateHospital(CreateHospitalDto dto, Guid adminId)
         {
             var hospital = new Hospital
             {
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
                 Address = dto.Address,
-                Type = dto.Type
+                Type = dto.Type,
+                AdminId = adminId
             };
             await _repo.Add(hospital);
             return hospital;
