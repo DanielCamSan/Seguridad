@@ -25,6 +25,12 @@ namespace Security.Data
                  .HasForeignKey(d => d.HospitalId)
                  .OnDelete(DeleteBehavior.SetNull);
             });
+
+            modelBuilder.Entity<Hospital>()
+                .HasOne(h => h.Admin)
+                .WithOne(u => u.Hospital)
+                .HasForeignKey<Hospital>(h => h.AdminId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
