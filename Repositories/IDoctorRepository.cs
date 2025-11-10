@@ -8,7 +8,7 @@ namespace Security.Repositories
 
         Task Update(Doctor doctor);
         Task Delete(Doctor doctor);
-        Task<Doctor> GetOne(Guid id);
+        Task<Doctor?> GetOne(Guid id);
         Task<IEnumerable<Doctor>> GetAll();
 
     }
