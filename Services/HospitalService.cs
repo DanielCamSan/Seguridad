@@ -1,4 +1,5 @@
-﻿using Security.Models;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Security.Models;
 using Security.Models.DTOS;
 using Security.Repositories;
 
@@ -31,7 +32,9 @@ namespace Security.Services
 
         public async Task<Hospital> GetOne(Guid id)
         {
-            return await _repo.GetOne(id);
+            var hospital = await _repo.GetOne(id);
+            if (hospital is null) throw new Exception("Hospital not found");
+            return hospital;
         }
         public async Task<Hospital> UpdateHospital(UpdateHospitalDto dto, Guid id)
         {
