@@ -1,15 +1,21 @@
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Security.Data;
 using Security.Repositories;
 using Security.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Env Loading
+Env.Load();
+
+builder.Configuration.AddEnvironmentVariables();
 
 // Controllers
 builder.Services.AddControllers();
@@ -21,23 +27,23 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "Tu API", Version = "v1" });
     
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer",
         BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        In = ParameterLocation.Header,
     });
 
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
