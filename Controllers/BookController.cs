@@ -8,18 +8,18 @@ namespace Security.Controllers
 {
     [ApiController]
     [Route("/api/[controller]")]
-    public class HospitalController:ControllerBase
+    public class BookController:ControllerBase
     {
-        private readonly IHospitalService _service;
-        public HospitalController(IHospitalService service)
+        private readonly IBookService _service;
+        public BookController(IBookService service)
         {
             _service = service;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllHospitals()
+        public async Task<IActionResult> GetAllBooks()
         {
-            IEnumerable<Hospital> items = await _service.GetAll();
+            IEnumerable<Book> items = await _service.GetAll();
             return Ok(items);
         }
         [HttpGet("{id:guid}")]
@@ -31,27 +31,27 @@ namespace Security.Controllers
         }
         [HttpPost]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> CreateHospital([FromBody] CreateHospitalDto dto)
+        public async Task<IActionResult> CreateBook([FromBody] CreateBookDto dto)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.CreateHospital(dto);
+            var hospital = await _service.CreateBook(dto);
             return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
         }
         [HttpPut("{id:guid}")]
-        [Authorize]
-        public async Task<IActionResult> UpdateHospital([FromBody] UpdateHospitalDto dto, Guid id)
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> UpdateBook([FromBody] UpdateBookDto dto, Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            var hospital = await _service.UpdateHospital(dto, id);
+            var hospital = await _service.UpdateBook(dto, id);
             return CreatedAtAction(nameof(GetOne), new { id = hospital.Id }, hospital);
         }
 
         [HttpDelete("{id:guid}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> DeleteHospital(Guid id)
+        public async Task<IActionResult> DeleteBook(Guid id)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-            await _service.DeleteHospital(id);
+            await _service.DeleteBook(id);
             return NoContent();
         }
     }

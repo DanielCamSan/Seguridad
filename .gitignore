@@ -18,4 +18,6 @@ TestResult*/
 *.log
 
 Migrations/
-"@ | Out-File -Encoding utf8 .gitignore
+"@ | Out-File -Encoding utf8 .gitignore}
+
+.idea
