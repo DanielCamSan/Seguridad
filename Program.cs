@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
-using Microsoft.OpenApi.Models; // ✅ PARA SWAGGER
+using Microsoft.OpenApi.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
@@ -33,7 +34,6 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API para gestión de animales con autenticación JWT"
     });
 
-    // Configurar JWT en Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
@@ -68,11 +68,21 @@ builder.Services.AddCors(opt =>
         .AllowAnyMethod());
 });
 
+// ========== IN-MEMORY DATABASE (SOLUCIÓN TEMPORAL) ==========
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseInMemoryDatabase("AnimalsDB"));
+
 // ========== JWT AUTHENTICATION ==========
-var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
-var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
-var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
-var keyBytes = Convert.FromBase64String(jwtKey!);
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? "tu_clave_secreta_minima_32_caracteres_123456789012";
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "AnimalsAPI";
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "AnimalsClient";
+
+if (jwtKey.Length < 32)
+{
+    jwtKey = jwtKey.PadRight(32, '0');
+}
+
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -98,17 +108,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
 });
 
-// ========== DATABASE ==========
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ??
-    $"Host={Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost"};" +
-    $"Port={Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? "5432"};" +
-    $"Database={Environment.GetEnvironmentVariable("POSTGRES_DB")};" +
-    $"Username={Environment.GetEnvironmentVariable("POSTGRES_USER")};" +
-    $"Password={Environment.GetEnvironmentVariable("POSTGRES_PASSWORD")}";
-
-builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(connectionString));
-
 // ========== DEPENDENCY INJECTION ==========
 builder.Services.AddScoped<IHospitalRepository, HospitalRepository>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
@@ -133,5 +132,60 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// ========== INICIALIZAR DATOS DE PRUEBA ==========
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Agregar datos de prueba
+    if (!db.Animals.Any())
+    {
+        db.Animals.AddRange(
+            new Security.Models.Animal
+            {
+                Id = Guid.NewGuid(),
+                Name = "León",
+                Species = "Panthera leo",
+                Age = 5,
+                Habitat = "Sabana",
+                ConservationStatus = "Vulnerable"
+            },
+            new Security.Models.Animal
+            {
+                Id = Guid.NewGuid(),
+                Name = "Elefante Africano",
+                Species = "Loxodonta africana",
+                Age = 15,
+                Habitat = "Sabana y Bosques",
+                ConservationStatus = "En Peligro"
+            },
+            new Security.Models.Animal
+            {
+                Id = Guid.NewGuid(),
+                Name = "Tigre de Bengala",
+                Species = "Panthera tigris tigris",
+                Age = 8,
+                Habitat = "Bosques Tropicales",
+                ConservationStatus = "En Peligro"
+            }
+        );
+        db.SaveChanges();
+    }
+
+    if (!db.Users.Any())
+    {
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword("123456");
+        db.Users.Add(new Security.Models.User
+        {
+            Id = Guid.NewGuid(),
+            Username = "admin",
+            Email = "admin@test.com",
+            PasswordHash = hashedPassword,
+            Role = "Admin"
+        });
+        db.SaveChanges();
+    }
+}
 
 app.Run();
