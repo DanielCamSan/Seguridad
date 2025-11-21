@@ -1,12 +1,14 @@
+using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Security.Data;
 using Security.Repositories;
 using Security.Services;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using DotNetEnv;
+using System.Threading.RateLimiting;
 
 //dotnet add package DotNetEnv
 
@@ -21,6 +23,7 @@ if (!string.IsNullOrEmpty(port))
 }
 
 builder.Services.AddControllers();
+
 builder.Services.AddOpenApi();
 builder.Services.AddCors(opt =>
 {
@@ -29,6 +32,19 @@ builder.Services.AddCors(opt =>
         .AllowAnyHeader()
         .AllowAnyMethod());
 });
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = 429;
+    options.AddFixedWindowLimiter("Fixed", ConcurrencyLimiterOptions =>
+    {
+        ConcurrencyLimiterOptions.PermitLimit = 10;
+        ConcurrencyLimiterOptions.Window = TimeSpan.FromSeconds(5);
+        ConcurrencyLimiterOptions.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        ConcurrencyLimiterOptions.QueueLimit = 5;
+    });
+});
+
 
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
@@ -44,7 +60,7 @@ builder.Services
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey=true,
+            ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
@@ -74,7 +90,9 @@ opt.UseNpgsql(connectionString));
 builder.Services.AddScoped<IHospitalRepository, HospitalRepository>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();  
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAnimalRepository, AnimalRepository>();
+builder.Services.AddScoped<IAnimalService, AnimalService>();
 
 var app = builder.Build();
 

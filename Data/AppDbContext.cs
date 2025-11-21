@@ -11,12 +11,14 @@ namespace Security.Data
         }
         public DbSet<User> Users => Set<User>();
         public DbSet<Hospital> Hospitals => Set<Hospital>();
+        public DbSet<Animals> Animals => Set<Animals>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>();
             modelBuilder.Entity<Hospital>();
+            modelBuilder.Entity<Animals>();
         }
     }
 }
