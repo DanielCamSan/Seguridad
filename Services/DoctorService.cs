@@ -43,3 +43,5 @@ namespace Security.Services
                 HospitalName = doctor.Hospital?.Name
             };
         }
+    }
+}
