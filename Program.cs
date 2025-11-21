@@ -6,16 +6,28 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using DoNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+Env.Load();
 
 // Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddCors(opt=>
+{
+    opt.AddPolicy("AllowAll", p => p
+        .AllowAnyOrigin()
+        
+    );
+}    
+
+);
 var jwt = builder.Configuration.GetSection("Jwt");
 var keyBytes = Encoding.UTF8.GetBytes(jwt["Key"]!);
+
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -37,6 +49,10 @@ builder.Services
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    var dbName = Environment.GetEnvironmentVariable("POSTGRES_BD");
+    var dbUser = Environment.GetEnvironmentVariable("PSOTGRES_USER");
+    var dbPass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+    var connectionString;
 });
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
