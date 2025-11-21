@@ -10,6 +10,7 @@ namespace Security.Data
         {
         }
         public DbSet<User> Users => Set<User>();
+        public DbSet<Book> Books => Set<Book>();
         public DbSet<Hospital> Hospitals => Set<Hospital>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -17,6 +18,7 @@ namespace Security.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>();
             modelBuilder.Entity<Hospital>();
+            modelBuilder.Entity<Book>();
         }
     }
 }
