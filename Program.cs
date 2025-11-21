@@ -1,16 +1,17 @@
-using DotNetEnv;
+﻿using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+        
 using Security.Data;
 using Security.Repositories;
 using Security.Services;
 using System.Security.Claims;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 //dotnet add package DotNetEnv
-
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
@@ -77,10 +78,23 @@ builder.Services.AddRateLimiter(options =>
 });
 
 //JWT AUTHENTICATION-------------
-var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
-var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
-var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
-var keyBytes = Convert.FromBase64String(jwtKey!);
+// Leer desde IConfiguration para que coincida con AuthService (que usa _configuration["Jwt:Key"])
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    // Fallback a la variable de entorno si prefieres (pero asegúrate del nombre y formato)
+    jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+}
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("JWT key no configurada. Define 'Jwt:Key' en appsettings o 'Jwt__Key' en las variables de entorno.");
+}
+
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
