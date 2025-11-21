@@ -29,6 +29,16 @@ namespace Security.Controllers
             return Ok(response);
         }
 
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutDto dto)
+        {
+            var ok = await _service.LogoutAsync(dto);
+
+            if (ok)
+                return Ok(new { message = "Refresh token invalidado y sesión cerrada" });
+            return BadRequest("No se pudo finalizar la sesión");
+        }
+
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto dto)
         {
